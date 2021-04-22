@@ -7,7 +7,8 @@ namespace JSON_Parser
     {
         static void Main(string[] args)
         {
-            Tokenizer t = new Tokenizer(new Input("true  false   null"), new Tokenizable[] {
+            Tokenizer t = new Tokenizer(new Input("true  false \"anas\" null \""), new Tokenizable[] {
+                new StringTokenizer(),
                 new WhiteSpaceTokenizer(),
                 new KeywordsTokenizer(new List<string>
                 {
@@ -117,6 +118,7 @@ namespace JSON_Parser
             string buffer = "";
             while (this.hasMore() && condition(this))
                 buffer += this.step().Character;
+
             return buffer;
         }
     }
@@ -220,6 +222,29 @@ namespace JSON_Parser
         {
             return new Token(t.input.Position, t.input.LineNumber,
                 "whitespace", t.input.loop(isWhiteSpace));
+        }
+    }
+
+    public class StringTokenizer : Tokenizable
+    {
+        public override bool tokenizable(Tokenizer t)
+        {
+            return t.input.peek() == '"';
+        }
+
+        public override Token tokenize(Tokenizer t)
+        {
+            t.input.step();
+
+            string value = t.input.loop(input => input.peek() != '"');
+
+            if (t.input.peek() != '"')
+                throw new Exception("Error");
+
+            t.input.step();
+
+            return new Token(t.input.Position, t.input.LineNumber,
+                    "string", value);
         }
     }
 }
