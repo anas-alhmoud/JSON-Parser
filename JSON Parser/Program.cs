@@ -7,14 +7,13 @@ namespace JSON_Parser
     {
         static void Main(string[] args)
         {
-            Tokenizer t = new Tokenizer(new Input(""), new Tokenizable[] {
+            Tokenizer t = new Tokenizer(new Input("true  false   null"), new Tokenizable[] {
                 new WhiteSpaceTokenizer(),
-                new IdTokenizer(new List<string>
+                new KeywordsTokenizer(new List<string>
                 {
-                    "if","else","for","fun","return"
-                }),
-                new NumberTokenizer()
-            }); ;
+                    "true","false","null"
+                })
+            }); 
             Token token = t.tokenize();
             while (token != null)
             {
@@ -164,28 +163,31 @@ namespace JSON_Parser
         }
         public List<Token> all() { return null; }
     }
-    public class IdTokenizer : Tokenizable
+    public class KeywordsTokenizer : Tokenizable
     {
         private List<string> keywords;
-        public IdTokenizer(List<string> keywords)
+        public KeywordsTokenizer(List<string> keywords)
         {
             this.keywords = keywords;
         }
         public override bool tokenizable(Tokenizer t)
         {
-            char currentCharacter = t.input.peek();
-            //Console.WriteLine(currentCharacter);
-            return Char.IsLetter(currentCharacter) || currentCharacter == '_';
+            return isLetter(t.input);
         }
-        static bool isId(Input input)
+        static bool isLetter(Input input)
         {
             char currentCharacter = input.peek();
-            return Char.IsLetterOrDigit(currentCharacter) || currentCharacter == '_';
+            return Char.IsLetter(currentCharacter);
         }
         public override Token tokenize(Tokenizer t)
         {
+            string value = t.input.loop(isLetter);
+
+            if (!this.keywords.Contains(value))
+                throw new Exception("Unexpected token");
+
             return new Token(t.input.Position, t.input.LineNumber,
-                "identifier", t.input.loop(isId));
+                "keyword", value);
         }
     }
     public class NumberTokenizer : Tokenizable
