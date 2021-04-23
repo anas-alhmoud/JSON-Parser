@@ -185,6 +185,20 @@ namespace JSON_Parser
                 "whitespace", " ");
         }
     }
+    public class NewLineTokenizer : Tokenizable
+    {
+        public override bool tokenizable(Tokenizer t)
+        {
+            return String.Concat(t.input.peek(), t.input.peek(2)) == Environment.NewLine || t.input.peek().ToString() == Environment.NewLine;
+        }
+
+        public override Token tokenize(Tokenizer t)
+        {
+            t.input.step(Environment.NewLine.Length);
+            return new Token(t.input.Position, t.input.LineNumber,
+                "NewLine", Environment.NewLine);
+        }
+    }
     public class JSymbolsTokenizer : Tokenizable
     {
 
