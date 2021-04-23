@@ -7,7 +7,7 @@ namespace JSON_Parser
     {
         static void Main(string[] args)
         {
-            string testCase = "true  false \"anas\" null  0 -0 0.423 -0.23  0.22e4 0.22e+4 0.22e-4 -0.22e4 -0.22e+4 -0.22e-4";
+            string testCase = "true  false \"anas\" null    -0 0.423 -0.23  0.22e4 0.22e+4 0.22e-4 -0.22e4 -0.22e+4 -0.22e-4 0. 8468";
             string tc = "3224 -3231  13.31 -3242.32   2E+3 2E3 2E-3 265e+324 265e324 265e-324 -2E+3 -2E3 -2E-3 -265e+324 -265e324 -265e-324";
             Tokenizer t = new Tokenizer(new Input(testCase), new Tokenizable[] {
                 new StringTokenizer(),
@@ -252,7 +252,7 @@ namespace JSON_Parser
         private bool isZero;
         public override bool tokenizable(Tokenizer t)
         {
-            if (t.input.peek(2) == '0')
+            if (t.input.peek(2) == '0' || t.input.peek() == '0')
             {
                 isZero = true;
             }
