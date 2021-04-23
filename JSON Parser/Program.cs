@@ -188,6 +188,33 @@ namespace JSON_Parser
                 "whitespace", t.input.loop(isWhiteSpace));
         }
     }
+    public class JSymbolsTokenizer : Tokenizable
+    {
+
+        private List<char> validSymobls;
+        private char symbol;
+        private string type;
+
+
+        public JSymbolsTokenizer(char symbol, string type)
+        {
+            this.symbol = symbol;
+            this.type = type;
+        }
+        public override bool tokenizable(Tokenizer t)
+        {
+            return this.symbol == t.input.peek();
+        }
+
+        public override Token tokenize(Tokenizer t)
+        {
+            char currentChar = t.input.peek();
+            t.input.step();
+            return new Token(t.input.Position, t.input.LineNumber,
+                this.type, currentChar.ToString());
+        }
+    }
+
 
     public class KeywordsTokenizer : Tokenizable
     {
