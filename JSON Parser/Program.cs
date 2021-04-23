@@ -178,14 +178,11 @@ namespace JSON_Parser
         {
             return Char.IsWhiteSpace(t.input.peek());
         }
-        static bool isWhiteSpace(Input input)
-        {
-            return Char.IsWhiteSpace(input.peek());
-        }
         public override Token tokenize(Tokenizer t)
         {
+            t.input.step();
             return new Token(t.input.Position, t.input.LineNumber,
-                "whitespace", t.input.loop(isWhiteSpace));
+                "whitespace", " ");
         }
     }
     public class JSymbolsTokenizer : Tokenizable
