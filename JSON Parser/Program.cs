@@ -7,7 +7,7 @@ namespace JSON_Parser
     {
         static void Main(string[] args)
         {
-            string testCase = "true  false \"anas\" null    -0 0.423 -0.23  0.22e4 0.22e+4 0.22e-4 -0.22e4 -0.22e+4 -0.22e-4 0. 8468";
+            string testCase = "true  \r\n \"something\" false 765868 \"anas\" null    -0 0.423 -0.23  0.22e4 0.22e+4 0.22e-4 -0.22e4 -0.22e+4 -0.22e-4 0. 8468";
             string tc = "3224 -3231  13.31 -3242.32   2E+3 2E3 2E-3 265e+324 265e324 265e-324 -2E+3 -2E3 -2E-3 -265e+324 -265e324 -265e-324";
             Tokenizer t = new Tokenizer(new Input(testCase), new Tokenizable[] {
                 new StringTokenizer(),
@@ -16,8 +16,9 @@ namespace JSON_Parser
                     "true","false","null"
                 }),
                 new NumberTokenizer(),
-                new WhiteSpaceTokenizer(),
-
+                new NewLineTokenizer(),
+                new WhiteSpaceTokenizer(true)
+                
             }); 
             Token token = t.tokenize();
             
@@ -144,6 +145,11 @@ namespace JSON_Parser
     }
     public abstract class Tokenizable
     {
+        public bool isOptional;
+        public Tokenizable(bool isOptional = false)
+        {
+            this.isOptional = isOptional;
+        }
         public abstract bool tokenizable(Tokenizer tokenizer);
         public abstract Token tokenize(Tokenizer tokenizer);
     }
@@ -165,8 +171,23 @@ namespace JSON_Parser
         }
         public Token tokenize()
         {
-            foreach (var handler in this.handlers)
-                if (handler.tokenizable(this)) return handler.tokenize(this);
+            for (int i = 0; i < this.handlers.Length; i++)
+            {
+                if (this.handlers[i].tokenizable(this))
+                {
+                    if (this.handlers[i].isOptional)
+                    {
+                        this.handlers[i].tokenize(this);
+                        i = -1;
+                    } else
+                    {
+                        return this.handlers[i].tokenize(this);
+                    }
+                    
+                }
+            }
+                
+                    
             return null;
         }
         public List<Token> all() { return null; }
@@ -174,6 +195,11 @@ namespace JSON_Parser
 
     public class WhiteSpaceTokenizer : Tokenizable
     {
+        
+        public WhiteSpaceTokenizer(bool isOptional = false)
+        {
+            this.isOptional = isOptional;
+        }
         public override bool tokenizable(Tokenizer t)
         {
             return Char.IsWhiteSpace(t.input.peek());
@@ -187,6 +213,10 @@ namespace JSON_Parser
     }
     public class NewLineTokenizer : Tokenizable
     {
+        public NewLineTokenizer(bool isOptional = false)
+        {
+            this.isOptional = isOptional;
+        }
         public override bool tokenizable(Tokenizer t)
         {
             return String.Concat(t.input.peek(), t.input.peek(2)) == Environment.NewLine || t.input.peek().ToString() == Environment.NewLine;
