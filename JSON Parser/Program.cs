@@ -7,20 +7,26 @@ namespace JSON_Parser
     {
         static void Main(string[] args)
         {
-            Tokenizer t = new Tokenizer(new Input("true  false \"anas\" null \""), new Tokenizable[] {
+            string testCase = "true  false \"anas\" null  0 -0 0.423 -0.23  0.22e4 0.22e+4 0.22e-4 -0.22e4 -0.22e+4 -0.22e-4";
+            string tc = "3224 -3231  13.31 -3242.32   2E+3 2E3 2E-3 265e+324 265e324 265e-324 -2E+3 -2E3 -2E-3 -265e+324 -265e324 -265e-324";
+            Tokenizer t = new Tokenizer(new Input(tc), new Tokenizable[] {
                 new StringTokenizer(),
-                new WhiteSpaceTokenizer(),
                 new KeywordsTokenizer(new List<string>
                 {
                     "true","false","null"
-                })
+                }),
+                new NumberTokenizer(),
+                new WhiteSpaceTokenizer(),
+
             }); 
             Token token = t.tokenize();
+            
             while (token != null)
             {
                 Console.WriteLine(token.Value);
                 token = t.tokenize();
             }
+            
 
         }
     }
@@ -110,7 +116,7 @@ namespace JSON_Parser
         public Input reset() { return this; }
         public char peek(int numOfSteps = 1)
         {
-            if (this.hasMore()) return this.input[this.NextPosition];
+            if (this.hasMore(numOfSteps)) return this.input[this.Position + numOfSteps];
             return '\0';
         }
         public string loop(InputCondition condition)
@@ -165,6 +171,24 @@ namespace JSON_Parser
         }
         public List<Token> all() { return null; }
     }
+
+    public class WhiteSpaceTokenizer : Tokenizable
+    {
+        public override bool tokenizable(Tokenizer t)
+        {
+            return Char.IsWhiteSpace(t.input.peek());
+        }
+        static bool isWhiteSpace(Input input)
+        {
+            return Char.IsWhiteSpace(input.peek());
+        }
+        public override Token tokenize(Tokenizer t)
+        {
+            return new Token(t.input.Position, t.input.LineNumber,
+                "whitespace", t.input.loop(isWhiteSpace));
+        }
+    }
+
     public class KeywordsTokenizer : Tokenizable
     {
         private List<string> keywords;
@@ -192,38 +216,6 @@ namespace JSON_Parser
                 "keyword", value);
         }
     }
-    public class NumberTokenizer : Tokenizable
-    {
-        public override bool tokenizable(Tokenizer t)
-        {
-            return Char.IsDigit(t.input.peek());
-        }
-        static bool isDigit(Input input)
-        {
-            return Char.IsDigit(input.peek());
-        }
-        public override Token tokenize(Tokenizer t)
-        {
-            return new Token(t.input.Position, t.input.LineNumber,
-                "number", t.input.loop(isDigit));
-        }
-    }
-    public class WhiteSpaceTokenizer : Tokenizable
-    {
-        public override bool tokenizable(Tokenizer t)
-        {
-            return Char.IsWhiteSpace(t.input.peek());
-        }
-        static bool isWhiteSpace(Input input)
-        {
-            return Char.IsWhiteSpace(input.peek());
-        }
-        public override Token tokenize(Tokenizer t)
-        {
-            return new Token(t.input.Position, t.input.LineNumber,
-                "whitespace", t.input.loop(isWhiteSpace));
-        }
-    }
 
     public class StringTokenizer : Tokenizable
     {
@@ -247,4 +239,81 @@ namespace JSON_Parser
                     "string", value);
         }
     }
+
+    public class NumberTokenizer : Tokenizable
+    {
+        private bool isNegative;
+        private bool isZero;
+        public override bool tokenizable(Tokenizer t)
+        {
+            if (t.input.peek(2) == '0')
+            {
+                isZero = true;
+            }
+            else
+            {
+                isZero = false;
+            }
+
+            if (t.input.peek() == '-' && Char.IsDigit(t.input.peek(2)) )
+            {
+                isNegative = true;
+                return true;
+            } else
+            {
+                isNegative = false;
+                return Char.IsDigit(t.input.peek());
+            }
+
+        }
+        public override Token tokenize(Tokenizer t)
+        {
+            string value = "";
+            if (isZero)
+            {
+                if (isNegative)
+                {
+                    if (Char.IsDigit(t.input.step().step().peek()))
+                        throw new Exception("Error");
+
+                    value = "-";
+
+                }
+                else
+                {
+                    if (Char.IsDigit(t.input.step().peek()))
+                        throw new Exception("Error");
+                }
+
+                value += "0";
+            } else
+            {
+                if (isNegative)
+                {
+                    value += t.input.step().Character;
+                }
+
+                value += t.input.loop(input => Char.IsDigit(t.input.peek()));
+
+            }
+
+            if (t.input.peek() == '.' && Char.IsDigit(t.input.peek(2)))
+            {
+                value += t.input.step().Character;
+                value += t.input.loop(input => Char.IsDigit(t.input.peek()));
+            }
+
+            if ( (t.input.peek() == 'E' || t.input.peek() == 'e') && ( Char.IsDigit(t.input.peek(2)) || t.input.peek(2) == '+' || t.input.peek(2) == '-') )
+            {
+                value += t.input.step().Character;
+                value += t.input.step().Character;
+
+                value += t.input.loop(input => Char.IsDigit(t.input.peek()));
+            }
+
+            return new Token(t.input.Position, t.input.LineNumber, "number", value);
+        }
+
+    }
+
 }
