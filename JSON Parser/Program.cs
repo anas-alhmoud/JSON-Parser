@@ -7,7 +7,7 @@ namespace JSON_Parser
     {
         static void Main(string[] args)
         {
-            string testCase = "true  \r\n \"something\" false \r\n 765868 \"anas\" null    -0 0.423 -0.23  0.22e4 0.22e+4 0.22e-4 -0.22e4 -0.22e+4 -0.22e-4 0. 8468";
+            string testCase = "true  \r\n $ \"something\" false \r\n 765868 \"anas\" null    -0 0.423 -0.23  0.22e4 0.22e+4 0.22e-4 -0.22e4 -0.22e+4 -0.22e-4 0. 8468";
             string tc = "3224 -3231  13.31 -3242.32   2E+3 2E3 2E-3 265e+324 265e324 265e-324 -2E+3 -2E3 -2E-3 -265e+324 -265e324 -265e-324";
             Tokenizer t = new Tokenizer(new Input(testCase), new Tokenizable[] {
                 new StringTokenizer(),
@@ -16,7 +16,7 @@ namespace JSON_Parser
                     "true","false","null"
                 }),
                 new NumberTokenizer(),
-                new NewLineTokenizer(),
+                new NewLineTokenizer(true),
                 new WhiteSpaceTokenizer(true)
                 
             }); 
@@ -192,7 +192,7 @@ namespace JSON_Parser
             }
                 
                     
-            return null;
+            throw new Exception("Unexpected token at line number: " + this.input.LineNumber);
         }
         public List<Token> all() { return null; }
     }
