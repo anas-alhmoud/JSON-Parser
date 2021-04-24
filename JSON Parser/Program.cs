@@ -332,7 +332,7 @@ namespace JSON_Parser
         private bool isZero;
         public override bool tokenizable(Tokenizer t)
         {
-            if (t.input.peek(2) == '0' || t.input.peek() == '0')
+            if ( ( t.input.peek(2) == '0' && t.input.peek() == '-') || t.input.peek() == '0')
             {
                 isZero = true;
             }
