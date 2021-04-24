@@ -7,7 +7,7 @@ namespace JSON_Parser
     {
         static void Main(string[] args)
         {
-            string testCase = "true  \r\n \"something\" false 765868 \"anas\" null    -0 0.423 -0.23  0.22e4 0.22e+4 0.22e-4 -0.22e4 -0.22e+4 -0.22e-4 0. 8468";
+            string testCase = "true  \r\n \"something\" false \r\n 765868 \"anas\" null    -0 0.423 -0.23  0.22e4 0.22e+4 0.22e-4 -0.22e4 -0.22e+4 -0.22e-4 0. 8468";
             string tc = "3224 -3231  13.31 -3242.32   2E+3 2E3 2E-3 265e+324 265e324 265e-324 -2E+3 -2E3 -2E-3 -265e+324 -265e324 -265e-324";
             Tokenizer t = new Tokenizer(new Input(testCase), new Tokenizable[] {
                 new StringTokenizer(),
@@ -24,7 +24,7 @@ namespace JSON_Parser
             
             while (token != null)
             {
-                Console.WriteLine(token.Value + " ---> " + token.Type);
+                Console.WriteLine(token.Value + " ---> " + token.Type + "line:" + token.LineNumber);
                 token = t.tokenize();
             }
             
@@ -66,6 +66,10 @@ namespace JSON_Parser
             get
             {
                 return this.lineNumber;
+            }
+            set
+            {
+                this.lineNumber = value;
             }
         }
         public char Character
@@ -225,6 +229,7 @@ namespace JSON_Parser
         public override Token tokenize(Tokenizer t)
         {
             t.input.step(Environment.NewLine.Length);
+            t.input.LineNumber++;
             return new Token(t.input.Position, t.input.LineNumber,
                 "NewLine", Environment.NewLine);
         }
