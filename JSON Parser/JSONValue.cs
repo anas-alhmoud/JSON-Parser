@@ -1,39 +1,203 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace JSON_Parser
 {
-    abstract class JSONValue
+    public class JSONValue
     {
+        public string NodeType { get; }
+
+        public JSONValue(string value)
+        {
+            NodeType = "single-value";
+            Value = value;
+        }
+
+        public JSONValue(List<KeyValue> value)
+        {
+            NodeType = "object";
+            Object = value;
+        }
+
+        public JSONValue(List<JSONValue> value)
+        {
+            NodeType = "array";
+            Array = value;
+        }
+
+        private string Value;
+        private List<KeyValue> Object;
+        private List<JSONValue> Array;
+
+        public string getVal()
+        {
+            if(NodeType == "single-value")
+                return Value;
+            throw new Exception("You can't call getVal on type " + NodeType);
+        }
+
+        public List<KeyValue> getObj()
+        {
+            if (NodeType == "object")
+                return Object;
+            throw new Exception("You can't call getObj on type " + NodeType);
+        }
+
+        public List<JSONValue> getArr()
+        {
+            if (NodeType == "array")
+                return Array;
+            throw new Exception("You can't call getArr on type " + NodeType );
+        }
 
     }
 
-    abstract class SingleJSONValue<T> : JSONValue
-    {
-        public T Value { get; set; }
-    }
 
-    abstract class CollectionJSONValue<T> : JSONValue
-    {
-        public List<T> Value { get; set; }
-    }
-
-    class StringJSONValue : SingleJSONValue<string> { }
-    class NumberJSONValue : SingleJSONValue<double> { }
-    class BoolenJSONValue : SingleJSONValue<bool> { }
-    class NullJSONValue : SingleJSONValue<bool?> { }
-
-    class ObjectJSONValue : CollectionJSONValue<KeyValue> { }
-    class ArrayJSONValue : CollectionJSONValue<JSONValue> { }
-
-    class KeyValue {
+    public class KeyValue {
         public string key;
         public JSONValue value;
     }
 
-    class JSON
+    public class JSON
     {
-        public static JSONValue parse(string str) { return null; }
+        public static JSONValue parse(string str) {
+
+            Input i = new Input(str);
+            Tokenizer tkzr = new Tokenizer(i,
+                new Tokenizable[]
+                {
+                new StringTokenizer(),
+                new KeywordsTokenizer(new List<string>
+                {
+                    "true","false","null"
+                }),
+                new NumberTokenizer(),
+                new NewLineTokenizer(true),
+                new WhiteSpaceTokenizer(true),
+                new JSymbolsTokenizer('[', "array-start"),
+                new JSymbolsTokenizer(']', "array-end"),
+                new JSymbolsTokenizer(':', "colon"),
+                new JSymbolsTokenizer(',', "comma"),
+                new JSymbolsTokenizer('{', "object-start"),
+                new JSymbolsTokenizer('}', "object-end")
+                }
+                );
+            Token tkn = tkzr.tokenize();
+
+            return checkToken(tkn, tkzr);
+
+        }
+
+        private static List<JSONValue> collectArrayValue(Tokenizer tkzr)
+        {
+            List<JSONValue> JList = new List<JSONValue>();
+
+            while (true)
+            {
+                Token token = tkzr.tokenize();
+
+                if (token.Type == "array-end")
+                {
+                    return JList;
+                }
+
+                JList.Add(checkToken(token, tkzr));
+
+                token = tkzr.tokenize();
+
+                if (token.Type == "array-end")
+                {
+                    return JList;
+                }
+
+                if (token.Type == "comma")
+                {
+                    continue;
+                }
+
+                break;
+            }
+
+
+            throw new Exception("Error");
+        }
+
+        private static List<KeyValue> collectObjectValue(Tokenizer tkzr)
+        {
+            List<KeyValue> JList = new List<KeyValue>();
+
+            while (true)
+            {
+                KeyValue keyValue = new KeyValue();
+                Token token = tkzr.tokenize();
+
+                if (token.Type == "object-end")
+                {
+                    return JList;
+                }
+
+                if (token.Type == "string")
+                {
+                    keyValue.key = token.Value;
+
+                    token = tkzr.tokenize();
+
+                    if (token.Type == "colon")
+                    {
+                        token = tkzr.tokenize();
+
+                        keyValue.value = checkToken(token, tkzr);
+                        JList.Add(keyValue);
+
+                        token = tkzr.tokenize();
+
+                        if (token.Type == "object-end")
+                        {
+                            return JList;
+                        }
+
+                        if (token.Type == "comma")
+                        {
+                            continue;
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+
+            throw new Exception("Error");
+        }
+
+        private static JSONValue checkToken(Token tkn, Tokenizer tkzr)
+        {
+            if (tkn.Type == "string")
+            {
+                return new JSONValue(tkn.Value);
+            }
+            else if (tkn.Type == "number")
+            {
+                return new JSONValue(tkn.Value);
+            }
+            else if (tkn.Type == "boolean")
+            {
+                return new JSONValue(tkn.Value);
+            }
+            else if (tkn.Type == "null")
+            {
+                return new JSONValue(tkn.Value);
+            }
+            else if (tkn.Type == "array-start")
+            {
+                return new JSONValue(collectArrayValue(tkzr));
+            }
+            else if (tkn.Type == "object-start")
+            {
+                return new JSONValue(collectObjectValue(tkzr));
+            }
+
+            throw new Exception("Error");
+        }
     }
 }
