@@ -84,40 +84,49 @@ namespace JSON_Parser
                 );
             Token tkn = tkzr.tokenize();
 
-            return checkToken(tkn, tkzr);
+            JSONValue result = checkToken(tkn, tkzr);
 
+            Token nexTkn = tkzr.tokenize();
+
+            if(nexTkn != null)
+            {
+                throw new Exception("");
+            }
+
+            return result;
         }
 
         private static List<JSONValue> collectArrayValue(Tokenizer tkzr)
         {
             List<JSONValue> JList = new List<JSONValue>();
 
-            while (true)
+            Token token = tkzr.tokenize();
+
+            if (token.Type == "array-end")
             {
-                Token token = tkzr.tokenize();
-
-                if (token.Type == "array-end")
-                {
-                    return JList;
-                }
-
-                JList.Add(checkToken(token, tkzr));
-
-                token = tkzr.tokenize();
-
-                if (token.Type == "array-end")
-                {
-                    return JList;
-                }
-
-                if (token.Type == "comma")
-                {
-                    continue;
-                }
-
-                break;
+                return JList;
             }
 
+            JList.Add(checkToken(token, tkzr));
+
+
+            while (true)
+            {
+                token = tkzr.tokenize();
+
+                if (token.Type != "comma")
+                {
+                    break;
+                }
+
+                token = tkzr.tokenize();
+                JList.Add(checkToken(token, tkzr));
+            }
+
+            if (token.Type == "array-end")
+            {
+                return JList;
+            }
 
             throw new Exception("Error");
         }
@@ -126,18 +135,19 @@ namespace JSON_Parser
         {
             List<KeyValue> JList = new List<KeyValue>();
 
+            Token token = tkzr.tokenize();
+
+            if (token.Type == "object-end")
+            {
+                return JList;
+            }
+
+
             while (true)
             {
-                KeyValue keyValue = new KeyValue();
-                Token token = tkzr.tokenize();
-
-                if (token.Type == "object-end")
-                {
-                    return JList;
-                }
-
                 if (token.Type == "string")
                 {
+                    KeyValue keyValue = new KeyValue();
                     keyValue.key = token.Value;
 
                     token = tkzr.tokenize();
@@ -151,21 +161,59 @@ namespace JSON_Parser
 
                         token = tkzr.tokenize();
 
+                        if (token.Type != "comma")
+                        {
+                            break;
+                        }
+
+                        token = tkzr.tokenize();
+
                         if (token.Type == "object-end")
                         {
-                            return JList;
+                            throw new Exception("Error");
                         }
 
-                        if (token.Type == "comma")
-                        {
-                            continue;
-                        }
-
-                        break;
+                        continue;
                     }
+
                 }
+
+                break;
             }
 
+
+            /*
+             * 
+             * 
+             *                 token = tkzr.tokenize();
+
+                if (token.Type == "string")
+                {
+                    KeyValue keyValue = new KeyValue();
+                    keyValue.key = token.Value;
+
+                    token = tkzr.tokenize();
+
+                    if (token.Type == "colon")
+                    {
+                        token = tkzr.tokenize();
+
+                        keyValue.value = checkToken(token, tkzr);
+                        JList.Add(keyValue);
+                    }
+
+                }
+
+                break;
+             * 
+             * 
+             * 
+             * 
+             */
+            if (token.Type == "object-end")
+            {
+                return JList;
+            }
 
             throw new Exception("Error");
         }
