@@ -5,35 +5,34 @@ namespace JSON_Parser
 {
     class Program
     {
+       
         static void Main(string[] args)
         {
-            string testCase = @"true  ""something"" false  765868 
-""anas"" null    
--0 0.423 -0.23  0.22e4 0.22e+4 
-0.22e-4 -0.22e4 -0.22e+4 -0.22e-4 0 ""something else why? ""
- 
- ";
-            string tc = "3224 -3231  13.31 -3242.32   2E+3 2E3 2E-3 265e+324 265e324 265e-324 -2E+3 -2E3 -2E-3 -265e+324 -265e324 -265e-324";
-            Tokenizer t = new Tokenizer(new Input(testCase), new Tokenizable[] {
-                new StringTokenizer(),
-                new KeywordsTokenizer(new List<string>
-                {
-                    "true","false","null"
-                }),
-                new NumberTokenizer(),
-                new NewLineTokenizer(true),
-                new WhiteSpaceTokenizer(true)
-                
-            }); 
-            Token token = t.tokenize();
-            
-            while (token != null)
-            {
-                Console.WriteLine(token.Value + " ---> " + token.Type + "line:" + token.LineNumber);
-                token = t.tokenize();
-            }
-            
+            JSONValue root = JSON.parse(@"{
+                                ""data"": ""Click Here"",
+                                ""size"": 1,
+                                ""style"": ""bold"",
+                                ""name"": ""text1"",
+                                ""hOffset"": ""one"",
+                                ""vOffset"": ""two"",
+                                ""alignment"": ""center"",
+                                ""onMouseUp"": ""sun1.opacity = (sun1.opacity / v);"",
+                                ""More"": {
+                                    ""data"": [true, false],
+                                    ""size"": 100,
+                                    ""style"": false
+                                    }
+                            }");
 
+            Console.WriteLine(
+                "Key:" + root.getObj()[0].key + ", Value:" + root.getObj()[0].value.getVal()
+                );
+            Console.WriteLine(
+                "Key:" + root.getObj()[1].key + ", Value:" + root.getObj()[1].value.getVal()
+                );
+            Console.WriteLine(
+                "Key:" + root.getObj()[8].value.getObj()[0].key + ", Value:" + root.getObj()[8].value.getObj()[0].value.getArr()[0].getVal()
+                );
         }
     }
 
