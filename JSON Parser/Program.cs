@@ -196,7 +196,7 @@ namespace JSON_Parser
             }
                 
             if(this.input.hasMore())
-            throw new Exception("Unexpected token at line number: " + this.input.LineNumber);
+            throw new Exception("Tokenizer: Unexpected token at line number: " + this.input.LineNumber);
 
             return null;
         }
@@ -295,7 +295,7 @@ namespace JSON_Parser
                 type = "boolean";
 
             if (!this.keywords.Contains(value))
-                throw new Exception("Unexpected token");
+                throw new Exception("KeywordsTokenizer: Unknown keyword at line number: " + t.input.LineNumber);
 
             return new Token(t.input.Position, t.input.LineNumber,
                 type, value);
@@ -316,7 +316,7 @@ namespace JSON_Parser
             string value = t.input.loop(input => input.peek() != '"');
 
             if (t.input.peek() != '"')
-                throw new Exception("Error");
+                throw new Exception("StringTokenizer: string has not been closed at line number: " + t.input.LineNumber);
 
             t.input.step();
 
@@ -359,7 +359,7 @@ namespace JSON_Parser
                 if (isNegative)
                 {
                     if (Char.IsDigit(t.input.step().step().peek()))
-                        throw new Exception("Error");
+                        throw new Exception("NumberTokenizer: Unexpected number at line number: " + t.input.LineNumber);
 
                     value = "-";
 
@@ -367,7 +367,7 @@ namespace JSON_Parser
                 else
                 {
                     if (Char.IsDigit(t.input.step().peek()))
-                        throw new Exception("Error");
+                        throw new Exception("NumberTokenizer: Unexpected number at line number: " + t.input.LineNumber);
                 }
 
                 value += "0";

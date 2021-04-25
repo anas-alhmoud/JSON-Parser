@@ -128,7 +128,7 @@ namespace JSON_Parser
                 return JList;
             }
 
-            throw new Exception("Error");
+            throw new Exception("Parser: Unexpected token at line number: " + token.LineNumber);
         }
 
         private static List<KeyValue> collectObjectValue(Tokenizer tkzr)
@@ -170,7 +170,7 @@ namespace JSON_Parser
 
                         if (token.Type == "object-end")
                         {
-                            throw new Exception("Error");
+                            throw new Exception("Parser: Unexpected token at line number: " + token.LineNumber);
                         }
 
                         continue;
@@ -181,41 +181,12 @@ namespace JSON_Parser
                 break;
             }
 
-
-            /*
-             * 
-             * 
-             *                 token = tkzr.tokenize();
-
-                if (token.Type == "string")
-                {
-                    KeyValue keyValue = new KeyValue();
-                    keyValue.key = token.Value;
-
-                    token = tkzr.tokenize();
-
-                    if (token.Type == "colon")
-                    {
-                        token = tkzr.tokenize();
-
-                        keyValue.value = checkToken(token, tkzr);
-                        JList.Add(keyValue);
-                    }
-
-                }
-
-                break;
-             * 
-             * 
-             * 
-             * 
-             */
             if (token.Type == "object-end")
             {
                 return JList;
             }
 
-            throw new Exception("Error");
+            throw new Exception("Parser: Unexpected token at line number: " + token.LineNumber);
         }
 
         private static JSONValue checkToken(Token tkn, Tokenizer tkzr)
@@ -245,7 +216,7 @@ namespace JSON_Parser
                 return new JSONValue(collectObjectValue(tkzr));
             }
 
-            throw new Exception("Error");
+            throw new Exception("Parser: Unexpected token at line number: " + tkn.LineNumber);
         }
     }
 }
